@@ -8,7 +8,7 @@ pipeline {
               archive 'target/*.jar' 
             }
         }   
-      stage('Unit Tests') {
+      stage('Unit Tests - JUnit and JaCoCo') {
             steps {
               sh "mvn test"
             }
@@ -18,6 +18,17 @@ pipeline {
                 jacoco execPattern: 'target/jacoco.exec'
               }
             }
+      }
+
+      stage('Mutation Tests - PIT') {
+        steps {
+          sh "mvn org pitest:pitest-maven:mutationCoverage"
+        }
+        post {
+          always {
+            pitmutation mutationStatsFile: '**/target/pit-reports/**/mutations.xml'
+          }
+        }
       }
 
       stage('Docker Build and Push') {
